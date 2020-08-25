@@ -1,0 +1,260 @@
+options:
+  parameters:
+    author: ''
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    description: ''
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: no_gui
+    hier_block_src_path: '.:'
+    id: pipefm
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: '1'
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: run
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: Not titled yet
+    window_size: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 8]
+    rotation: 0
+    state: enabled
+
+blocks:
+- name: rds_source
+  id: variable_function_probe
+  parameters:
+    block_id: epy_block_0
+    comment: ''
+    function_args: ''
+    function_name: is_my_pty
+    poll_rate: '10'
+    value: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [600, 360.0]
+    rotation: 0
+    state: true
+- name: redsea_rate
+  id: variable
+  parameters:
+    comment: ''
+    value: '171000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [200, 16.0]
+    rotation: 0
+    state: enabled
+- name: analog_fm_deemph_0
+  id: analog_fm_deemph
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: redsea_rate
+    tau: 50e-6
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [552, 216.0]
+    rotation: 0
+    state: true
+- name: audio_device
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Audio device
+    short_id: a
+    type: str
+    value: pulse
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [448, 16.0]
+    rotation: 0
+    state: true
+- name: audio_rate
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Audio rate in Hz
+    short_id: r
+    type: intx
+    value: '48000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [304, 16.0]
+    rotation: 0
+    state: true
+- name: audio_sink_0
+  id: audio_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    device_name: audio_device
+    num_inputs: '1'
+    ok_to_block: 'True'
+    samp_rate: '48000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1160, 248.0]
+    rotation: 0
+    state: enabled
+- name: blocks_file_descriptor_source_0
+  id: blocks_file_descriptor_source
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    fd: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    repeat: 'False'
+    type: short
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [136, 216.0]
+    rotation: 0
+    state: true
+- name: blocks_multiply_const_vxx_0
+  id: blocks_multiply_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    const: rds_source
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [944, 256.0]
+    rotation: 0
+    state: enabled
+- name: blocks_short_to_float_0
+  id: blocks_short_to_float
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    scale: 2**15
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [376, 224.0]
+    rotation: 0
+    state: true
+- name: epy_block_0
+  id: epy_block
+  parameters:
+    _source_code: "\"\"\"\nRedsea integration\n\nTODO\n\"\"\"\n\nimport numpy as np\n\
+      from gnuradio import gr\nimport subprocess\nimport select\nimport json\n\nclass\
+      \ blk(gr.sync_block):  # other base classes are basic_block, decim_block, interp_block\n\
+      \    \"\"\"Redsea RDS decoder integration\"\"\"\n\n    def __init__(self, command=\"\
+      redsea\", pty=\"News\"):  # only default arguments here\n        \"\"\"arguments\
+      \ to this function show up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n\
+      \            self,\n            name='Redsea integration',   # will show up\
+      \ in GRC\n            in_sig=[np.int16],\n            out_sig=[]\n        )\n\
+      \n        self.level = 0\n\n        # Fork process later because otherwise gnuradio\
+      \ does it too early\n        self.redsea = None\n        self.command = command\n\
+      \        self.pty = pty\n\n        self.good = 0\n        self.bad = 0\n\n \
+      \   def is_my_pty(args):\n        return self.level\n    \n    def work(self,\
+      \ input_items, output_items):\n        \"\"\"Throw data to Red Sea\"\"\"\n \
+      \       print(\"in: \" + str(len(input_items[0])) + \" out: \" + str(len(input_items[0].tobytes())))\n\
+      \        if self.redsea is None:\n            self.redsea = subprocess.Popen([self.command],\
+      \ stdin=subprocess.PIPE, stdout=subprocess.PIPE)\n\n        # Receive JSON if\
+      \ any\n        while True:\n            reading, _, _ = select.select([self.redsea.stdout]\
+      \ , [self.redsea.stdin], [])\n            if (reading == []):\n            \
+      \    break\n\n            rds = json.loads(self.redsea.stdout.readline())\n\
+      \            if \"prog_type\" in rds:\n                if rds[\"prog_type\"\
+      ] == self.pty:\n                    self.good += 1\n                else:\n\
+      \                    self.bad += 1\n\n                if self.level == 0 and\
+      \ self.good == 3:\n                    self.level = 1\n                    self.bad\
+      \ = 0\n                    print(\"ALKAA\")\n                elif self.level\
+      \ == 1 and self.bad == 5: # End threshold is higher\n                    self.level\
+      \ = 0\n                    self.good = 0\n                    print(\"LOPPU\"\
+      )\n\n        # Send data to Redsea\n        self.redsea.stdin.write(input_items[0].tobytes())\n\
+      \        return len(input_items[0])\n"
+    affinity: ''
+    alias: ''
+    command: '"/home/joell/koodaus/redsea/src/redsea"'
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    pty: '"Current affairs"'
+  states:
+    _io_cache: ('Redsea integration', 'blk', [('command', "'redsea'"), ('pty', "'News'")],
+      [('0', 'short', 1)], [], 'Redsea RDS decoder integration', ['command', 'pty'])
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [360, 304.0]
+    rotation: 0
+    state: enabled
+- name: mmse_resampler_xx_0
+  id: mmse_resampler_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    phase_shift: '0'
+    resamp_ratio: redsea_rate/audio_rate
+    type: float
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [744, 232.0]
+    rotation: 0
+    state: true
+
+connections:
+- [analog_fm_deemph_0, '0', mmse_resampler_xx_0, '0']
+- [blocks_file_descriptor_source_0, '0', blocks_short_to_float_0, '0']
+- [blocks_file_descriptor_source_0, '0', epy_block_0, '0']
+- [blocks_multiply_const_vxx_0, '0', audio_sink_0, '0']
+- [blocks_short_to_float_0, '0', analog_fm_deemph_0, '0']
+- [mmse_resampler_xx_0, '0', blocks_multiply_const_vxx_0, '0']
+
+metadata:
+  file_format: 1
