@@ -148,6 +148,23 @@ blocks:
     coordinate: [720, 232.0]
     rotation: 0
     state: true
+- name: pty
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: PTY to play
+    short_id: p
+    type: str
+    value: News
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [704, 16.0]
+    rotation: 0
+    state: true
 - name: pty_mute
   id: epy_block
   parameters:
@@ -175,7 +192,7 @@ blocks:
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    target_pty: '"News"'
+    target_pty: pty
   states:
     _io_cache: ('PTY unmuter', 'blk', [('target_pty', "'News'")], [('pty', 'message',
       1)], [('end', 'message', 1), ('mute', 'message', 1)], 'Embedded Python Block
@@ -229,7 +246,7 @@ blocks:
       \n        # Just copy data intact\n        return len(input_items[0])\n"
     affinity: ''
     alias: ''
-    command: '"/home/joell/koodaus/redsea/src/redsea"'
+    command: redsea_path
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -243,6 +260,23 @@ blocks:
     coordinate: [272, 328.0]
     rotation: 0
     state: enabled
+- name: redsea_path
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Path to Redsea
+    short_id: R
+    type: str
+    value: ./redsea
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [568, 16.0]
+    rotation: 0
+    state: true
 - name: resample_to_audio
   id: mmse_resampler_xx
   parameters:
