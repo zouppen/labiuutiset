@@ -44,23 +44,6 @@ blocks:
     coordinate: [200, 16.0]
     rotation: 0
     state: enabled
-- name: analog_fm_deemph_0
-  id: analog_fm_deemph
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    samp_rate: redsea_rate
-    tau: 50e-6
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [480, 216.0]
-    rotation: 0
-    state: true
 - name: audio_device
   id: parameter
   parameters:
@@ -95,7 +78,7 @@ blocks:
     coordinate: [304, 16.0]
     rotation: 0
     state: true
-- name: audio_sink_0
+- name: audio_sink
   id: audio_sink
   parameters:
     affinity: ''
@@ -112,7 +95,7 @@ blocks:
     coordinate: [1104, 264.0]
     rotation: 0
     state: enabled
-- name: blocks_file_descriptor_source_0
+- name: fd_source
   id: blocks_file_descriptor_source
   parameters:
     affinity: ''
@@ -131,7 +114,24 @@ blocks:
     coordinate: [32, 216.0]
     rotation: 0
     state: true
-- name: blocks_mute_xx_0
+- name: fm_deemph
+  id: analog_fm_deemph
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: redsea_rate
+    tau: 50e-6
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [480, 216.0]
+    rotation: 0
+    state: true
+- name: muter
   id: blocks_mute_xx
   parameters:
     affinity: ''
@@ -146,41 +146,6 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [720, 232.0]
-    rotation: 0
-    state: true
-- name: blocks_short_to_float_0
-  id: blocks_short_to_float
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    scale: 2**15
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [304, 224.0]
-    rotation: 0
-    state: true
-- name: mmse_resampler_xx_0
-  id: mmse_resampler_xx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    phase_shift: '0'
-    resamp_ratio: redsea_rate/audio_rate
-    type: float
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [896, 248.0]
     rotation: 0
     state: true
 - name: pty_mute
@@ -278,17 +243,52 @@ blocks:
     coordinate: [272, 328.0]
     rotation: 0
     state: enabled
+- name: resample_to_audio
+  id: mmse_resampler_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    phase_shift: '0'
+    resamp_ratio: redsea_rate/audio_rate
+    type: float
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [896, 248.0]
+    rotation: 0
+    state: true
+- name: to_float
+  id: blocks_short_to_float
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    scale: 2**15
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [304, 224.0]
+    rotation: 0
+    state: true
 
 connections:
-- [analog_fm_deemph_0, '0', blocks_mute_xx_0, '0']
-- [blocks_file_descriptor_source_0, '0', blocks_short_to_float_0, '0']
-- [blocks_file_descriptor_source_0, '0', redsea, '0']
-- [blocks_mute_xx_0, '0', mmse_resampler_xx_0, '0']
-- [blocks_short_to_float_0, '0', analog_fm_deemph_0, '0']
-- [mmse_resampler_xx_0, '0', audio_sink_0, '0']
+- [fd_source, '0', redsea, '0']
+- [fd_source, '0', to_float, '0']
+- [fm_deemph, '0', muter, '0']
+- [muter, '0', resample_to_audio, '0']
 - [pty_mute, end, redsea, stop]
-- [pty_mute, mute, blocks_mute_xx_0, set_mute]
+- [pty_mute, mute, muter, set_mute]
 - [redsea, pty, pty_mute, pty]
+- [resample_to_audio, '0', audio_sink, '0']
+- [to_float, '0', fm_deemph, '0']
 
 metadata:
   file_format: 1
