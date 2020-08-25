@@ -1,6 +1,6 @@
 options:
   parameters:
-    author: ''
+    author: Joel Lehtonen
     category: '[GRC Hier Blocks]'
     cmake_opt: ''
     comment: ''
@@ -10,7 +10,7 @@ options:
     gen_linking: dynamic
     generate_options: no_gui
     hier_block_src_path: '.:'
-    id: pipefm
+    id: news_player
     max_nouts: '0'
     output_language: python
     placement: (0,0)
@@ -21,7 +21,7 @@ options:
     run_options: run
     sizing_mode: fixed
     thread_safe_setters: ''
-    title: Not titled yet
+    title: News player
     window_size: ''
   states:
     bus_sink: false
@@ -165,7 +165,63 @@ blocks:
     coordinate: [304, 224.0]
     rotation: 0
     state: true
-- name: epy_block_0
+- name: mmse_resampler_xx_0
+  id: mmse_resampler_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    phase_shift: '0'
+    resamp_ratio: redsea_rate/audio_rate
+    type: float
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [896, 248.0]
+    rotation: 0
+    state: true
+- name: pty_mute
+  id: epy_block
+  parameters:
+    _source_code: "\"\"\"\nSend mute and kill signals based on messages status\n\"\
+      \"\"\n\nimport numpy as np\nfrom gnuradio import gr\nimport pmt\nimport sys\n\
+      \nclass blk(gr.sync_block):  # other base classes are basic_block, decim_block,\
+      \ interp_block\n    \"\"\"Embedded Python Block example - a simple multiply\
+      \ const\"\"\"\n\n    def __init__(self, target_pty=\"News\"):  # only default\
+      \ arguments here\n        \"\"\"arguments to this function show up as parameters\
+      \ in GRC\"\"\"\n        gr.sync_block.__init__(\n            self,\n       \
+      \     name='PTY unmuter',   # will show up in GRC\n            in_sig=[],\n\
+      \            out_sig=[]\n        )\n        self.message_port_register_in(pmt.intern(\"\
+      pty\"))\n        self.message_port_register_out(pmt.intern(\"mute\"))\n    \
+      \    self.message_port_register_out(pmt.intern(\"end\"))\n        self.set_msg_handler(pmt.intern('pty'),\
+      \ self.pty_msg)\n\n        # if an attribute with the same name as a parameter\
+      \ is found,\n        # a callback is registered (properties work, too).\n  \
+      \      self.target_pty = target_pty\n        self.die_state = 1\n\n    def pty_msg(self,\
+      \ new_pty):\n        mute = str(new_pty) != self.target_pty\n        self.message_port_pub(pmt.intern('mute'),\
+      \ pmt.from_bool(mute))\n\n        if (not mute and self.die_state == 0) or (mute\
+      \ and self.die_state == 1):\n            self.die_state += 1\n            if\
+      \ self.die_state == 2:\n                self.message_port_pub(pmt.intern('end'),\
+      \ pmt.PMT_NIL)\n"
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    target_pty: '"News"'
+  states:
+    _io_cache: ('PTY unmuter', 'blk', [('target_pty', "'News'")], [('pty', 'message',
+      1)], [('end', 'message', 1), ('mute', 'message', 1)], 'Embedded Python Block
+      example - a simple multiply const', ['target_pty'])
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [504, 328.0]
+    rotation: 0
+    state: true
+- name: redsea
   id: epy_block
   parameters:
     _source_code: "\"\"\"\nRedsea integration\n\"\"\"\n\nimport numpy as np\nfrom\
@@ -222,73 +278,17 @@ blocks:
     coordinate: [272, 328.0]
     rotation: 0
     state: enabled
-- name: epy_block_1
-  id: epy_block
-  parameters:
-    _source_code: "\"\"\"\nSend mute and kill signals based on messages status\n\"\
-      \"\"\n\nimport numpy as np\nfrom gnuradio import gr\nimport pmt\nimport sys\n\
-      \nclass blk(gr.sync_block):  # other base classes are basic_block, decim_block,\
-      \ interp_block\n    \"\"\"Embedded Python Block example - a simple multiply\
-      \ const\"\"\"\n\n    def __init__(self, target_pty=\"News\"):  # only default\
-      \ arguments here\n        \"\"\"arguments to this function show up as parameters\
-      \ in GRC\"\"\"\n        gr.sync_block.__init__(\n            self,\n       \
-      \     name='PTY unmuter',   # will show up in GRC\n            in_sig=[],\n\
-      \            out_sig=[]\n        )\n        self.message_port_register_in(pmt.intern(\"\
-      pty\"))\n        self.message_port_register_out(pmt.intern(\"mute\"))\n    \
-      \    self.message_port_register_out(pmt.intern(\"end\"))\n        self.set_msg_handler(pmt.intern('pty'),\
-      \ self.pty_msg)\n\n        # if an attribute with the same name as a parameter\
-      \ is found,\n        # a callback is registered (properties work, too).\n  \
-      \      self.target_pty = target_pty\n        self.die_state = 1\n\n    def pty_msg(self,\
-      \ new_pty):\n        mute = str(new_pty) != self.target_pty\n        self.message_port_pub(pmt.intern('mute'),\
-      \ pmt.from_bool(mute))\n\n        if (not mute and self.die_state == 0) or (mute\
-      \ and self.die_state == 1):\n            self.die_state += 1\n            if\
-      \ self.die_state == 2:\n                self.message_port_pub(pmt.intern('end'),\
-      \ pmt.PMT_NIL)\n"
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    target_pty: '"News"'
-  states:
-    _io_cache: ('PTY unmuter', 'blk', [('target_pty', "'News'")], [('pty', 'message',
-      1)], [('end', 'message', 1), ('mute', 'message', 1)], 'Embedded Python Block
-      example - a simple multiply const', ['target_pty'])
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [504, 328.0]
-    rotation: 0
-    state: true
-- name: mmse_resampler_xx_0
-  id: mmse_resampler_xx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    phase_shift: '0'
-    resamp_ratio: redsea_rate/audio_rate
-    type: float
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [896, 248.0]
-    rotation: 0
-    state: true
 
 connections:
 - [analog_fm_deemph_0, '0', blocks_mute_xx_0, '0']
 - [blocks_file_descriptor_source_0, '0', blocks_short_to_float_0, '0']
-- [blocks_file_descriptor_source_0, '0', epy_block_0, '0']
+- [blocks_file_descriptor_source_0, '0', redsea, '0']
 - [blocks_mute_xx_0, '0', mmse_resampler_xx_0, '0']
 - [blocks_short_to_float_0, '0', analog_fm_deemph_0, '0']
-- [epy_block_0, pty, epy_block_1, pty]
-- [epy_block_1, end, epy_block_0, stop]
-- [epy_block_1, mute, blocks_mute_xx_0, set_mute]
 - [mmse_resampler_xx_0, '0', audio_sink_0, '0']
+- [pty_mute, end, redsea, stop]
+- [pty_mute, mute, blocks_mute_xx_0, set_mute]
+- [redsea, pty, pty_mute, pty]
 
 metadata:
   file_format: 1
