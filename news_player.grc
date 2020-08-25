@@ -181,7 +181,7 @@ blocks:
       \    self.message_port_register_out(pmt.intern(\"end\"))\n        self.set_msg_handler(pmt.intern('pty'),\
       \ self.pty_msg)\n\n        # if an attribute with the same name as a parameter\
       \ is found,\n        # a callback is registered (properties work, too).\n  \
-      \      self.target_pty = target_pty\n        self.die_state = 1\n\n    def pty_msg(self,\
+      \      self.target_pty = target_pty\n        self.die_state = 0\n\n    def pty_msg(self,\
       \ new_pty):\n        mute = str(new_pty) != self.target_pty\n        self.message_port_pub(pmt.intern('mute'),\
       \ pmt.from_bool(mute))\n\n        if (not mute and self.die_state == 0) or (mute\
       \ and self.die_state == 1):\n            self.die_state += 1\n            if\
