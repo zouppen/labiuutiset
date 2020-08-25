@@ -32,22 +32,6 @@ options:
     state: enabled
 
 blocks:
-- name: rds_source
-  id: variable_function_probe
-  parameters:
-    block_id: epy_block_0
-    comment: ''
-    function_args: ''
-    function_name: is_my_pty
-    poll_rate: '10'
-    value: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [600, 360.0]
-    rotation: 0
-    state: true
 - name: redsea_rate
   id: variable
   parameters:
@@ -74,7 +58,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [552, 216.0]
+    coordinate: [480, 216.0]
     rotation: 0
     state: true
 - name: audio_device
@@ -125,7 +109,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1160, 248.0]
+    coordinate: [1104, 264.0]
     rotation: 0
     state: enabled
 - name: blocks_file_descriptor_source_0
@@ -144,27 +128,26 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [136, 216.0]
+    coordinate: [32, 216.0]
     rotation: 0
     state: true
-- name: blocks_multiply_const_vxx_0
-  id: blocks_multiply_const_vxx
+- name: blocks_mute_xx_0
+  id: blocks_mute_xx
   parameters:
     affinity: ''
     alias: ''
     comment: ''
-    const: rds_source
     maxoutbuf: '0'
     minoutbuf: '0'
+    mute: 'True'
     type: float
-    vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [944, 256.0]
+    coordinate: [720, 232.0]
     rotation: 0
-    state: enabled
+    state: true
 - name: blocks_short_to_float_0
   id: blocks_short_to_float
   parameters:
@@ -179,54 +162,68 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [376, 224.0]
+    coordinate: [304, 224.0]
     rotation: 0
     state: true
 - name: epy_block_0
   id: epy_block
   parameters:
     _source_code: "\"\"\"\nRedsea integration\n\nTODO\n\"\"\"\n\nimport numpy as np\n\
-      from gnuradio import gr\nimport subprocess\nimport select\nimport json\n\nclass\
-      \ blk(gr.sync_block):  # other base classes are basic_block, decim_block, interp_block\n\
-      \    \"\"\"Redsea RDS decoder integration\"\"\"\n\n    def __init__(self, command=\"\
-      redsea\", pty=\"News\"):  # only default arguments here\n        \"\"\"arguments\
-      \ to this function show up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n\
-      \            self,\n            name='Redsea integration',   # will show up\
-      \ in GRC\n            in_sig=[np.int16],\n            out_sig=[]\n        )\n\
-      \n        self.level = 0\n\n        # Fork process later because otherwise gnuradio\
-      \ does it too early\n        self.redsea = None\n        self.command = command\n\
-      \        self.pty = pty\n\n        self.good = 0\n        self.bad = 0\n\n \
-      \   def is_my_pty(args):\n        return self.level\n    \n    def work(self,\
-      \ input_items, output_items):\n        \"\"\"Throw data to Red Sea\"\"\"\n \
-      \       print(\"in: \" + str(len(input_items[0])) + \" out: \" + str(len(input_items[0].tobytes())))\n\
-      \        if self.redsea is None:\n            self.redsea = subprocess.Popen([self.command],\
-      \ stdin=subprocess.PIPE, stdout=subprocess.PIPE)\n\n        # Receive JSON if\
-      \ any\n        while True:\n            reading, _, _ = select.select([self.redsea.stdout]\
-      \ , [self.redsea.stdin], [])\n            if (reading == []):\n            \
-      \    break\n\n            rds = json.loads(self.redsea.stdout.readline())\n\
-      \            if \"prog_type\" in rds:\n                if rds[\"prog_type\"\
-      ] == self.pty:\n                    self.good += 1\n                else:\n\
-      \                    self.bad += 1\n\n                if self.level == 0 and\
-      \ self.good == 3:\n                    self.level = 1\n                    self.bad\
-      \ = 0\n                    print(\"ALKAA\")\n                elif self.level\
-      \ == 1 and self.bad == 5: # End threshold is higher\n                    self.level\
-      \ = 0\n                    self.good = 0\n                    print(\"LOPPU\"\
-      )\n\n        # Send data to Redsea\n        self.redsea.stdin.write(input_items[0].tobytes())\n\
-      \        return len(input_items[0])\n"
+      from gnuradio import gr\nimport pmt\nimport subprocess\nimport select\nimport\
+      \ json\n\nclass debounce():\n    \"\"\"Debounce for a value. Value has to be\
+      \ present in given number of\n       successive packets before it's considered\
+      \ stable.\"\"\"\n\n    def __init__(self, streak=3):\n        self.streak =\
+      \ streak\n        self.current = None\n        self.pending = None\n\n    def\
+      \ got(self, value):\n        # No data in input, ignore\n        if value is\
+      \ None:\n            return None\n\n        # If got current value, reset pending\
+      \ value\n        if value == self.current:\n            self.pending = None\n\
+      \            return None\n\n        # If value is not pending, make it one\n\
+      \        if value != self.pending:\n            self.pending = value\n     \
+      \       self.tries = self.streak\n\n        # Check if target reached\n    \
+      \    self.tries -= 1\n        if self.tries == 0:\n            self.current\
+      \ = self.pending\n            self.pending = None\n            return self.current\n\
+      \n        # Nothing changed\n        return None\n\nclass blk(gr.sync_block):\
+      \  # other base classes are basic_block, decim_block, interp_block\n    \"\"\
+      \"Redsea RDS decoder integration\"\"\"\n\n    def __init__(self, command=\"\
+      redsea\", target_pty=\"News\", quit_after=False):  # only default arguments\
+      \ here\n        \"\"\"arguments to this function show up as parameters in GRC\"\
+      \"\"\n        gr.sync_block.__init__(\n            self,\n            name='RDS\
+      \ tagger',   # will show up in GRC\n            in_sig=[np.int16],\n       \
+      \     out_sig=[]\n        )\n        self.message_port_register_out(pmt.intern(\"\
+      wrong_pty\"))\n        \n        self.level = 1\n\n        # Fork process later\
+      \ because otherwise gnuradio does it too early\n        self.redsea = None\n\
+      \        self.command = command\n        self.target_pty = target_pty\n    \
+      \    self.quit_after = quit_after\n        self.ready_to_die = False\n     \
+      \   self.pty_debounce = debounce()\n\n    def work(self, input_items, output_items):\n\
+      \        \"\"\"Throw data to Red Sea\"\"\"\n        if self.redsea is None:\n\
+      \            self.redsea = subprocess.Popen([self.command], stdin=subprocess.PIPE,\
+      \ stdout=subprocess.PIPE)\n\n        # Receive JSON if any\n        while True:\n\
+      \            reading, _, _ = select.select([self.redsea.stdout] , [self.redsea.stdin],\
+      \ [])\n            if (reading == []):\n                break\n\n          \
+      \  rds = json.loads(self.redsea.stdout.readline())\n            if \"prog_type\"\
+      \ in rds:\n                new_pty = self.pty_debounce.got(rds[\"prog_type\"\
+      ])\n                if new_pty == self.target_pty:\n                    self.message_port_pub(pmt.intern('wrong_pty'),\
+      \ pmt.PMT_F)\n                    self.ready_to_die = True\n               \
+      \ elif new_pty is not None:\n                    self.message_port_pub(pmt.intern('wrong_pty'),\
+      \ pmt.PMT_T)\n                    if self.quit_after and self.ready_to_die:\
+      \ return -1\n\n        # Send data to Redsea\n        self.redsea.stdin.write(input_items[0].tobytes())\n\
+      \n        # Just copy data intact\n        return len(input_items[0])\n"
     affinity: ''
     alias: ''
     command: '"/home/joell/koodaus/redsea/src/redsea"'
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    pty: '"Current affairs"'
+    quit_after: 'True'
+    target_pty: '''News'''
   states:
-    _io_cache: ('Redsea integration', 'blk', [('command', "'redsea'"), ('pty', "'News'")],
-      [('0', 'short', 1)], [], 'Redsea RDS decoder integration', ['command', 'pty'])
+    _io_cache: ('RDS tagger', 'blk', [('command', "'redsea'"), ('target_pty', "'News'"),
+      ('quit_after', 'False')], [('0', 'short', 1)], [('wrong_pty', 'message', 1)],
+      'Redsea RDS decoder integration', ['command', 'quit_after', 'target_pty'])
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [360, 304.0]
+    coordinate: [304, 312.0]
     rotation: 0
     state: enabled
 - name: mmse_resampler_xx_0
@@ -244,17 +241,18 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [744, 232.0]
+    coordinate: [896, 248.0]
     rotation: 0
     state: true
 
 connections:
-- [analog_fm_deemph_0, '0', mmse_resampler_xx_0, '0']
+- [analog_fm_deemph_0, '0', blocks_mute_xx_0, '0']
 - [blocks_file_descriptor_source_0, '0', blocks_short_to_float_0, '0']
 - [blocks_file_descriptor_source_0, '0', epy_block_0, '0']
-- [blocks_multiply_const_vxx_0, '0', audio_sink_0, '0']
+- [blocks_mute_xx_0, '0', mmse_resampler_xx_0, '0']
 - [blocks_short_to_float_0, '0', analog_fm_deemph_0, '0']
-- [mmse_resampler_xx_0, '0', blocks_multiply_const_vxx_0, '0']
+- [epy_block_0, wrong_pty, blocks_mute_xx_0, set_mute]
+- [mmse_resampler_xx_0, '0', audio_sink_0, '0']
 
 metadata:
   file_format: 1
