@@ -83,7 +83,7 @@ blocks:
     bus_structure: null
     coordinate: [584, 392.0]
     rotation: 0
-    state: true
+    state: enabled
 - name: audio_device
   id: parameter
   parameters:
@@ -127,12 +127,12 @@ blocks:
     device_name: audio_device
     num_inputs: '1'
     ok_to_block: 'False'
-    samp_rate: '48000'
+    samp_rate: audio_rate
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [840, 608.0]
+    coordinate: [848, 608.0]
     rotation: 0
     state: enabled
 - name: bb_gain
@@ -166,9 +166,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [248, 768.0]
+    coordinate: [248, 752.0]
     rotation: 0
-    state: true
+    state: enabled
 - name: device
   id: parameter
   parameters:
@@ -202,7 +202,7 @@ blocks:
     bus_structure: null
     coordinate: [248, 560.0]
     rotation: 0
-    state: true
+    state: enabled
 - name: freq_xlating_fir_filter_xxx_0
   id: freq_xlating_fir_filter_xxx
   parameters:
@@ -274,7 +274,7 @@ blocks:
     bus_structure: null
     coordinate: [472, 576.0]
     rotation: 0
-    state: true
+    state: enabled
 - name: osmosdr_source_0
   id: osmosdr_source
   parameters:
@@ -631,7 +631,7 @@ blocks:
     bus_structure: null
     coordinate: [72, 292.0]
     rotation: 0
-    state: true
+    state: enabled
 - name: pty
   id: parameter
   parameters:
@@ -690,9 +690,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [608, 752.0]
+    coordinate: [608, 736.0]
     rotation: 0
-    state: true
+    state: enabled
 - name: redsea
   id: epy_block
   parameters:
@@ -746,7 +746,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [408, 768.0]
+    coordinate: [408, 752.0]
     rotation: 0
     state: enabled
 - name: redsea_path
@@ -783,7 +783,7 @@ blocks:
     bus_structure: null
     coordinate: [632, 592.0]
     rotation: 0
-    state: true
+    state: enabled
 - name: rf_gain
   id: parameter
   parameters:
@@ -841,9 +841,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [792, 768.0]
+    coordinate: [792, 752.0]
     rotation: 0
-    state: true
+    state: enabled
 - name: virtual_source_0
   id: virtual_source
   parameters:
@@ -869,7 +869,7 @@ blocks:
     bus_structure: null
     coordinate: [248, 648.0]
     rotation: 0
-    state: true
+    state: enabled
 
 connections:
 - [analog_quadrature_demod_cf_0, '0', virtual_sink_0, '0']
