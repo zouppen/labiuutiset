@@ -86,15 +86,37 @@ blocks:
     comment: ''
     device_name: audio_device
     num_inputs: '1'
-    ok_to_block: 'True'
+    ok_to_block: 'False'
     samp_rate: '48000'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1104, 264.0]
+    coordinate: [1072, 264.0]
     rotation: 0
     state: enabled
+- name: blocks_file_source_0
+  id: blocks_file_source
+  parameters:
+    affinity: ''
+    alias: ''
+    begin_tag: pmt.PMT_NIL
+    comment: ''
+    file: /home/joell/projektit/labiuutiset/poista.raw
+    length: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    offset: '0'
+    repeat: 'True'
+    type: short
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [32, 304.0]
+    rotation: 0
+    state: true
 - name: fd_source
   id: blocks_file_descriptor_source
   parameters:
@@ -111,9 +133,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [32, 216.0]
+    coordinate: [48, 216.0]
     rotation: 0
-    state: true
+    state: disabled
 - name: fm_deemph
   id: analog_fm_deemph
   parameters:
@@ -145,7 +167,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [720, 232.0]
+    coordinate: [704, 232.0]
     rotation: 0
     state: true
 - name: pty
@@ -172,35 +194,39 @@ blocks:
       \"\"\n\nimport numpy as np\nfrom gnuradio import gr\nimport pmt\nimport sys\n\
       \nclass blk(gr.sync_block):  # other base classes are basic_block, decim_block,\
       \ interp_block\n    \"\"\"Embedded Python Block example - a simple multiply\
-      \ const\"\"\"\n\n    def __init__(self, target_pty=\"News\"):  # only default\
-      \ arguments here\n        \"\"\"arguments to this function show up as parameters\
-      \ in GRC\"\"\"\n        gr.sync_block.__init__(\n            self,\n       \
-      \     name='PTY unmuter',   # will show up in GRC\n            in_sig=[],\n\
-      \            out_sig=[]\n        )\n        self.message_port_register_in(pmt.intern(\"\
+      \ const\"\"\"\n\n    def __init__(self, top_block=None, target_pty=\"News\"\
+      , stop_after=True):  # only default arguments here\n        \"\"\"arguments\
+      \ to this function show up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n\
+      \            self,\n            name='PTY unmuter',   # will show up in GRC\n\
+      \            in_sig=[],\n            out_sig=[]\n        )\n        self.message_port_register_in(pmt.intern(\"\
       pty\"))\n        self.message_port_register_out(pmt.intern(\"mute\"))\n    \
-      \    self.message_port_register_out(pmt.intern(\"end\"))\n        self.set_msg_handler(pmt.intern('pty'),\
-      \ self.pty_msg)\n\n        # if an attribute with the same name as a parameter\
-      \ is found,\n        # a callback is registered (properties work, too).\n  \
-      \      self.target_pty = target_pty\n        self.die_state = 0\n\n    def pty_msg(self,\
-      \ new_pty):\n        mute = str(new_pty) != self.target_pty\n        self.message_port_pub(pmt.intern('mute'),\
+      \    self.set_msg_handler(pmt.intern('pty'), self.pty_msg)\n\n        # if an\
+      \ attribute with the same name as a parameter is found,\n        # a callback\
+      \ is registered (properties work, too).\n        self.target_pty = target_pty\n\
+      \        self.die_state = 1\n        self.top_block = top_block\n        self.stop_after\
+      \ = stop_after\n\n    def pty_msg(self, new_pty):\n        print(str(new_pty))\n\
+      \        mute = str(new_pty) != self.target_pty\n        self.message_port_pub(pmt.intern('mute'),\
       \ pmt.from_bool(mute))\n\n        if (not mute and self.die_state == 0) or (mute\
       \ and self.die_state == 1):\n            self.die_state += 1\n            if\
-      \ self.die_state == 2:\n                self.message_port_pub(pmt.intern('end'),\
-      \ pmt.PMT_NIL)\n"
+      \ self.die_state == 2:\n                if self.top_block is not None and self.stop_after\
+      \ != 0:\n                    self.top_block.stop()\n\n"
     affinity: ''
     alias: ''
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
+    stop_after: stop_after
     target_pty: pty
+    top_block: self
   states:
-    _io_cache: ('PTY unmuter', 'blk', [('target_pty', "'News'")], [('pty', 'message',
-      1)], [('end', 'message', 1), ('mute', 'message', 1)], 'Embedded Python Block
-      example - a simple multiply const', ['target_pty'])
+    _io_cache: ('PTY unmuter', 'blk', [('top_block', 'None'), ('target_pty', "'News'"),
+      ('stop_after', 'True')], [('pty', 'message', 1)], [('mute', 'message', 1)],
+      'Embedded Python Block example - a simple multiply const', ['stop_after', 'target_pty',
+      'top_block'])
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [504, 328.0]
+    coordinate: [480, 320.0]
     rotation: 0
     state: true
 - name: redsea
@@ -227,22 +253,18 @@ blocks:
       \ show up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n    \
       \        self,\n            name='RDS parser',   # will show up in GRC\n   \
       \         in_sig=[np.int16],\n            out_sig=[]\n        )\n        self.message_port_register_out(pmt.intern(\"\
-      pty\"))\n        self.message_port_register_in(pmt.intern(\"stop\"))\n     \
-      \   self.set_msg_handler(pmt.intern('stop'), self.stopper)\n        \n     \
-      \   # Fork process later because otherwise gnuradio does it too early\n    \
-      \    self.redsea = None\n        self.command = command\n        self.pty_debounce\
-      \ = debounce()\n        self.stopping = False\n\n    def stopper(self, _):\n\
-      \        self.stopping = True\n        \n    def work(self, input_items, output_items):\n\
-      \        \"\"\"Throw data to Red Sea\"\"\"\n        if self.stopping:\n    \
-      \        return -1\n        \n        if self.redsea is None:\n            self.redsea\
-      \ = subprocess.Popen([self.command], stdin=subprocess.PIPE, stdout=subprocess.PIPE)\n\
-      \n        # Receive JSON if any\n        while True:\n            reading, _,\
-      \ _ = select.select([self.redsea.stdout] , [self.redsea.stdin], [])\n      \
-      \      if (reading == []):\n                break\n\n            rds = json.loads(self.redsea.stdout.readline())\n\
-      \            if \"prog_type\" in rds:\n                new_pty = self.pty_debounce.got(rds[\"\
-      prog_type\"])\n                if new_pty is not None:\n                   \
-      \ self.message_port_pub(pmt.intern('pty'), pmt.intern(new_pty))\n\n        #\
-      \ Send data to Redsea\n        self.redsea.stdin.write(input_items[0].tobytes())\n\
+      pty\"))\n        \n        # Fork process later because otherwise gnuradio does\
+      \ it too early\n        self.redsea = None\n        self.command = command\n\
+      \        self.pty_debounce = debounce()\n\n    def work(self, input_items, output_items):\n\
+      \        \"\"\"Throw data to Red Sea\"\"\"\n        if self.redsea is None:\n\
+      \            self.redsea = subprocess.Popen([self.command], stdin=subprocess.PIPE,\
+      \ stdout=subprocess.PIPE)\n\n        # Receive JSON if any\n        while True:\n\
+      \            reading, _, _ = select.select([self.redsea.stdout] , [self.redsea.stdin],\
+      \ [])\n            if (reading == []):\n                break\n\n          \
+      \  rds = json.loads(self.redsea.stdout.readline())\n            if \"prog_type\"\
+      \ in rds:\n                new_pty = self.pty_debounce.got(rds[\"prog_type\"\
+      ])\n                if new_pty is not None:\n                    self.message_port_pub(pmt.intern('pty'),\
+      \ pmt.intern(new_pty))\n\n        # Send data to Redsea\n        self.redsea.stdin.write(input_items[0].tobytes())\n\
       \n        # Just copy data intact\n        return len(input_items[0])\n"
     affinity: ''
     alias: ''
@@ -251,13 +273,12 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
   states:
-    _io_cache: ('RDS parser', 'blk', [('command', "'redsea'")], [('0', 'short', 1),
-      ('stop', 'message', 1)], [('pty', 'message', 1)], 'Redsea RDS decoder integration',
-      ['command'])
+    _io_cache: ('RDS parser', 'blk', [('command', "'redsea'")], [('0', 'short', 1)],
+      [('pty', 'message', 1)], 'Redsea RDS decoder integration', ['command'])
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [272, 328.0]
+    coordinate: [280, 336.0]
     rotation: 0
     state: enabled
 - name: redsea_path
@@ -292,7 +313,24 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [896, 248.0]
+    coordinate: [864, 248.0]
+    rotation: 0
+    state: true
+- name: stop_after
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Exit after given PTY ends
+    short_id: s
+    type: intx
+    value: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [824, 16.0]
     rotation: 0
     state: true
 - name: to_float
@@ -314,11 +352,12 @@ blocks:
     state: true
 
 connections:
+- [blocks_file_source_0, '0', redsea, '0']
+- [blocks_file_source_0, '0', to_float, '0']
 - [fd_source, '0', redsea, '0']
 - [fd_source, '0', to_float, '0']
 - [fm_deemph, '0', muter, '0']
 - [muter, '0', resample_to_audio, '0']
-- [pty_mute, end, redsea, stop]
 - [pty_mute, mute, muter, set_mute]
 - [redsea, pty, pty_mute, pty]
 - [resample_to_audio, '0', audio_sink, '0']
