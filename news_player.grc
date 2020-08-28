@@ -27,11 +27,35 @@ options:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 8]
+    coordinate: [16, 16.0]
     rotation: 0
     state: enabled
 
 blocks:
+- name: deviation
+  id: variable
+  parameters:
+    comment: ''
+    value: '90000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [768, 16.0]
+    rotation: 0
+    state: true
+- name: oversample
+  id: variable
+  parameters:
+    comment: ''
+    value: '8'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [856, 16.0]
+    rotation: 0
+    state: true
 - name: redsea_rate
   id: variable
   parameters:
@@ -41,9 +65,25 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [200, 16.0]
+    coordinate: [720, 160.0]
     rotation: 0
     state: enabled
+- name: analog_quadrature_demod_cf_0
+  id: analog_quadrature_demod_cf
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    gain: redsea_rate/(2*math.pi*deviation)
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [584, 392.0]
+    rotation: 0
+    state: true
 - name: audio_device
   id: parameter
   parameters:
@@ -58,7 +98,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [448, 16.0]
+    coordinate: [160, 160.0]
     rotation: 0
     state: true
 - name: audio_rate
@@ -75,7 +115,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [304, 16.0]
+    coordinate: [16, 160.0]
     rotation: 0
     state: true
 - name: audio_sink
@@ -92,50 +132,60 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1072, 264.0]
+    coordinate: [840, 608.0]
     rotation: 0
     state: enabled
-- name: blocks_file_source_0
-  id: blocks_file_source
+- name: bb_gain
+  id: parameter
   parameters:
-    affinity: ''
     alias: ''
-    begin_tag: pmt.PMT_NIL
     comment: ''
-    file: /home/joell/projektit/labiuutiset/poista.raw
-    length: '0'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    offset: '0'
-    repeat: 'True'
-    type: short
-    vlen: '1'
+    hide: none
+    label: BB gain
+    short_id: b
+    type: intx
+    value: '20'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [32, 304.0]
+    coordinate: [672, 16.0]
     rotation: 0
     state: true
-- name: fd_source
-  id: blocks_file_descriptor_source
+- name: blocks_float_to_short_0
+  id: blocks_float_to_short
   parameters:
     affinity: ''
     alias: ''
     comment: ''
-    fd: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
-    repeat: 'False'
-    type: short
+    scale: 2**15
     vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [48, 216.0]
+    coordinate: [248, 768.0]
     rotation: 0
-    state: disabled
+    state: true
+- name: device
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Device string
+    short_id: d
+    type: str
+    value: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [208, 16.0]
+    rotation: 0
+    state: true
 - name: fm_deemph
   id: analog_fm_deemph
   parameters:
@@ -150,7 +200,62 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [480, 216.0]
+    coordinate: [248, 560.0]
+    rotation: 0
+    state: true
+- name: freq_xlating_fir_filter_xxx_0
+  id: freq_xlating_fir_filter_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    center_freq: 2*redsea_rate
+    comment: ''
+    decim: oversample
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: oversample*redsea_rate
+    taps: firdes.complex_band_pass(1,oversample*redsea_rate,-deviation,deviation,
+      2000)
+    type: ccc
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [352, 368.0]
+    rotation: 0
+    state: enabled
+- name: frequency
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Frequency in MHz
+    short_id: f
+    type: eng_float
+    value: '100'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [336, 16.0]
+    rotation: 0
+    state: true
+- name: if_gain
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: IF gain
+    short_id: i
+    type: intx
+    value: '20'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [576, 16.0]
     rotation: 0
     state: true
 - name: muter
@@ -167,7 +272,364 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [704, 232.0]
+    coordinate: [472, 576.0]
+    rotation: 0
+    state: true
+- name: osmosdr_source_0
+  id: osmosdr_source
+  parameters:
+    affinity: ''
+    alias: ''
+    ant0: ''
+    ant1: ''
+    ant10: ''
+    ant11: ''
+    ant12: ''
+    ant13: ''
+    ant14: ''
+    ant15: ''
+    ant16: ''
+    ant17: ''
+    ant18: ''
+    ant19: ''
+    ant2: ''
+    ant20: ''
+    ant21: ''
+    ant22: ''
+    ant23: ''
+    ant24: ''
+    ant25: ''
+    ant26: ''
+    ant27: ''
+    ant28: ''
+    ant29: ''
+    ant3: ''
+    ant30: ''
+    ant31: ''
+    ant4: ''
+    ant5: ''
+    ant6: ''
+    ant7: ''
+    ant8: ''
+    ant9: ''
+    args: device
+    bb_gain0: bb_gain
+    bb_gain1: '20'
+    bb_gain10: '20'
+    bb_gain11: '20'
+    bb_gain12: '20'
+    bb_gain13: '20'
+    bb_gain14: '20'
+    bb_gain15: '20'
+    bb_gain16: '20'
+    bb_gain17: '20'
+    bb_gain18: '20'
+    bb_gain19: '20'
+    bb_gain2: '20'
+    bb_gain20: '20'
+    bb_gain21: '20'
+    bb_gain22: '20'
+    bb_gain23: '20'
+    bb_gain24: '20'
+    bb_gain25: '20'
+    bb_gain26: '20'
+    bb_gain27: '20'
+    bb_gain28: '20'
+    bb_gain29: '20'
+    bb_gain3: '20'
+    bb_gain30: '20'
+    bb_gain31: '20'
+    bb_gain4: '20'
+    bb_gain5: '20'
+    bb_gain6: '20'
+    bb_gain7: '20'
+    bb_gain8: '20'
+    bb_gain9: '20'
+    bw0: '0'
+    bw1: '0'
+    bw10: '0'
+    bw11: '0'
+    bw12: '0'
+    bw13: '0'
+    bw14: '0'
+    bw15: '0'
+    bw16: '0'
+    bw17: '0'
+    bw18: '0'
+    bw19: '0'
+    bw2: '0'
+    bw20: '0'
+    bw21: '0'
+    bw22: '0'
+    bw23: '0'
+    bw24: '0'
+    bw25: '0'
+    bw26: '0'
+    bw27: '0'
+    bw28: '0'
+    bw29: '0'
+    bw3: '0'
+    bw30: '0'
+    bw31: '0'
+    bw4: '0'
+    bw5: '0'
+    bw6: '0'
+    bw7: '0'
+    bw8: '0'
+    bw9: '0'
+    clock_source0: ''
+    clock_source1: ''
+    clock_source2: ''
+    clock_source3: ''
+    clock_source4: ''
+    clock_source5: ''
+    clock_source6: ''
+    clock_source7: ''
+    comment: ''
+    corr0: '0'
+    corr1: '0'
+    corr10: '0'
+    corr11: '0'
+    corr12: '0'
+    corr13: '0'
+    corr14: '0'
+    corr15: '0'
+    corr16: '0'
+    corr17: '0'
+    corr18: '0'
+    corr19: '0'
+    corr2: '0'
+    corr20: '0'
+    corr21: '0'
+    corr22: '0'
+    corr23: '0'
+    corr24: '0'
+    corr25: '0'
+    corr26: '0'
+    corr27: '0'
+    corr28: '0'
+    corr29: '0'
+    corr3: '0'
+    corr30: '0'
+    corr31: '0'
+    corr4: '0'
+    corr5: '0'
+    corr6: '0'
+    corr7: '0'
+    corr8: '0'
+    corr9: '0'
+    dc_offset_mode0: '0'
+    dc_offset_mode1: '0'
+    dc_offset_mode10: '0'
+    dc_offset_mode11: '0'
+    dc_offset_mode12: '0'
+    dc_offset_mode13: '0'
+    dc_offset_mode14: '0'
+    dc_offset_mode15: '0'
+    dc_offset_mode16: '0'
+    dc_offset_mode17: '0'
+    dc_offset_mode18: '0'
+    dc_offset_mode19: '0'
+    dc_offset_mode2: '0'
+    dc_offset_mode20: '0'
+    dc_offset_mode21: '0'
+    dc_offset_mode22: '0'
+    dc_offset_mode23: '0'
+    dc_offset_mode24: '0'
+    dc_offset_mode25: '0'
+    dc_offset_mode26: '0'
+    dc_offset_mode27: '0'
+    dc_offset_mode28: '0'
+    dc_offset_mode29: '0'
+    dc_offset_mode3: '0'
+    dc_offset_mode30: '0'
+    dc_offset_mode31: '0'
+    dc_offset_mode4: '0'
+    dc_offset_mode5: '0'
+    dc_offset_mode6: '0'
+    dc_offset_mode7: '0'
+    dc_offset_mode8: '0'
+    dc_offset_mode9: '0'
+    freq0: 1e6*frequency-2*redsea_rate
+    freq1: 100e6
+    freq10: 100e6
+    freq11: 100e6
+    freq12: 100e6
+    freq13: 100e6
+    freq14: 100e6
+    freq15: 100e6
+    freq16: 100e6
+    freq17: 100e6
+    freq18: 100e6
+    freq19: 100e6
+    freq2: 100e6
+    freq20: 100e6
+    freq21: 100e6
+    freq22: 100e6
+    freq23: 100e6
+    freq24: 100e6
+    freq25: 100e6
+    freq26: 100e6
+    freq27: 100e6
+    freq28: 100e6
+    freq29: 100e6
+    freq3: 100e6
+    freq30: 100e6
+    freq31: 100e6
+    freq4: 100e6
+    freq5: 100e6
+    freq6: 100e6
+    freq7: 100e6
+    freq8: 100e6
+    freq9: 100e6
+    gain0: rf_gain
+    gain1: '10'
+    gain10: '10'
+    gain11: '10'
+    gain12: '10'
+    gain13: '10'
+    gain14: '10'
+    gain15: '10'
+    gain16: '10'
+    gain17: '10'
+    gain18: '10'
+    gain19: '10'
+    gain2: '10'
+    gain20: '10'
+    gain21: '10'
+    gain22: '10'
+    gain23: '10'
+    gain24: '10'
+    gain25: '10'
+    gain26: '10'
+    gain27: '10'
+    gain28: '10'
+    gain29: '10'
+    gain3: '10'
+    gain30: '10'
+    gain31: '10'
+    gain4: '10'
+    gain5: '10'
+    gain6: '10'
+    gain7: '10'
+    gain8: '10'
+    gain9: '10'
+    gain_mode0: 'False'
+    gain_mode1: 'False'
+    gain_mode10: 'False'
+    gain_mode11: 'False'
+    gain_mode12: 'False'
+    gain_mode13: 'False'
+    gain_mode14: 'False'
+    gain_mode15: 'False'
+    gain_mode16: 'False'
+    gain_mode17: 'False'
+    gain_mode18: 'False'
+    gain_mode19: 'False'
+    gain_mode2: 'False'
+    gain_mode20: 'False'
+    gain_mode21: 'False'
+    gain_mode22: 'False'
+    gain_mode23: 'False'
+    gain_mode24: 'False'
+    gain_mode25: 'False'
+    gain_mode26: 'False'
+    gain_mode27: 'False'
+    gain_mode28: 'False'
+    gain_mode29: 'False'
+    gain_mode3: 'False'
+    gain_mode30: 'False'
+    gain_mode31: 'False'
+    gain_mode4: 'False'
+    gain_mode5: 'False'
+    gain_mode6: 'False'
+    gain_mode7: 'False'
+    gain_mode8: 'False'
+    gain_mode9: 'False'
+    if_gain0: if_gain
+    if_gain1: '20'
+    if_gain10: '20'
+    if_gain11: '20'
+    if_gain12: '20'
+    if_gain13: '20'
+    if_gain14: '20'
+    if_gain15: '20'
+    if_gain16: '20'
+    if_gain17: '20'
+    if_gain18: '20'
+    if_gain19: '20'
+    if_gain2: '20'
+    if_gain20: '20'
+    if_gain21: '20'
+    if_gain22: '20'
+    if_gain23: '20'
+    if_gain24: '20'
+    if_gain25: '20'
+    if_gain26: '20'
+    if_gain27: '20'
+    if_gain28: '20'
+    if_gain29: '20'
+    if_gain3: '20'
+    if_gain30: '20'
+    if_gain31: '20'
+    if_gain4: '20'
+    if_gain5: '20'
+    if_gain6: '20'
+    if_gain7: '20'
+    if_gain8: '20'
+    if_gain9: '20'
+    iq_balance_mode0: '0'
+    iq_balance_mode1: '0'
+    iq_balance_mode10: '0'
+    iq_balance_mode11: '0'
+    iq_balance_mode12: '0'
+    iq_balance_mode13: '0'
+    iq_balance_mode14: '0'
+    iq_balance_mode15: '0'
+    iq_balance_mode16: '0'
+    iq_balance_mode17: '0'
+    iq_balance_mode18: '0'
+    iq_balance_mode19: '0'
+    iq_balance_mode2: '0'
+    iq_balance_mode20: '0'
+    iq_balance_mode21: '0'
+    iq_balance_mode22: '0'
+    iq_balance_mode23: '0'
+    iq_balance_mode24: '0'
+    iq_balance_mode25: '0'
+    iq_balance_mode26: '0'
+    iq_balance_mode27: '0'
+    iq_balance_mode28: '0'
+    iq_balance_mode29: '0'
+    iq_balance_mode3: '0'
+    iq_balance_mode30: '0'
+    iq_balance_mode31: '0'
+    iq_balance_mode4: '0'
+    iq_balance_mode5: '0'
+    iq_balance_mode6: '0'
+    iq_balance_mode7: '0'
+    iq_balance_mode8: '0'
+    iq_balance_mode9: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nchan: '1'
+    num_mboards: '1'
+    sample_rate: oversample*redsea_rate
+    sync: pc_clock
+    time_source0: ''
+    time_source1: ''
+    time_source2: ''
+    time_source3: ''
+    time_source4: ''
+    time_source5: ''
+    time_source6: ''
+    time_source7: ''
+    type: fc32
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [72, 292.0]
     rotation: 0
     state: true
 - name: pty
@@ -184,18 +646,19 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [704, 16.0]
+    coordinate: [280, 160.0]
     rotation: 0
     state: true
 - name: pty_mute
   id: epy_block
   parameters:
-    _source_code: "\"\"\"\nSend mute and kill signals based on messages status\n\"\
-      \"\"\n\nimport numpy as np\nfrom gnuradio import gr\nimport pmt\nimport sys\n\
-      \nclass blk(gr.sync_block):  # other base classes are basic_block, decim_block,\
-      \ interp_block\n    \"\"\"Embedded Python Block example - a simple multiply\
-      \ const\"\"\"\n\n    def __init__(self, top_block=None, target_pty=\"News\"\
-      , stop_after=True):  # only default arguments here\n        \"\"\"arguments\
+    _source_code: "\"\"\"\nPTY unmuter block\n\"\"\"\n\nimport numpy as np\nfrom gnuradio\
+      \ import gr\nimport pmt\nimport sys\n\nclass blk(gr.sync_block):  # other base\
+      \ classes are basic_block, decim_block, interp_block\n    \"\"\"\n    Send unmute\
+      \ message when PTY starts and mute when it ends. Also,\n    stop the top block\
+      \ after given PTY if stop_after is enabled and\n    top_block is set to self\
+      \ in grc.\n    \"\"\"\n\n    def __init__(self, top_block=None, target_pty=\"\
+      News\", stop_after=True):  # only default arguments here\n        \"\"\"arguments\
       \ to this function show up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n\
       \            self,\n            name='PTY unmuter',   # will show up in GRC\n\
       \            in_sig=[],\n            out_sig=[]\n        )\n        self.message_port_register_in(pmt.intern(\"\
@@ -203,13 +666,13 @@ blocks:
       \    self.set_msg_handler(pmt.intern('pty'), self.pty_msg)\n\n        # if an\
       \ attribute with the same name as a parameter is found,\n        # a callback\
       \ is registered (properties work, too).\n        self.target_pty = target_pty\n\
-      \        self.die_state = 1\n        self.top_block = top_block\n        self.stop_after\
+      \        self.die_state = 0\n        self.top_block = top_block\n        self.stop_after\
       \ = stop_after\n\n    def pty_msg(self, new_pty):\n        print(str(new_pty))\n\
       \        mute = str(new_pty) != self.target_pty\n        self.message_port_pub(pmt.intern('mute'),\
       \ pmt.from_bool(mute))\n\n        if (not mute and self.die_state == 0) or (mute\
       \ and self.die_state == 1):\n            self.die_state += 1\n            if\
-      \ self.die_state == 2:\n                if self.top_block is not None and self.stop_after\
-      \ != 0:\n                    self.top_block.stop()\n\n"
+      \ self.die_state == 2:\n                if self.top_block is not None and (self.stop_after\
+      \ != 0 or self.stop_after == True):\n                    self.top_block.stop()\n"
     affinity: ''
     alias: ''
     comment: ''
@@ -221,12 +684,13 @@ blocks:
   states:
     _io_cache: ('PTY unmuter', 'blk', [('top_block', 'None'), ('target_pty', "'News'"),
       ('stop_after', 'True')], [('pty', 'message', 1)], [('mute', 'message', 1)],
-      'Embedded Python Block example - a simple multiply const', ['stop_after', 'target_pty',
-      'top_block'])
+      '\n    Send unmute message when PTY starts and mute when it ends. Also,\n    stop
+      the top block after given PTY if stop_after is enabled and\n    top_block is
+      set to self in grc.\n    ', ['stop_after', 'target_pty', 'top_block'])
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [480, 320.0]
+    coordinate: [608, 752.0]
     rotation: 0
     state: true
 - name: redsea
@@ -259,13 +723,17 @@ blocks:
       \        \"\"\"Throw data to Red Sea\"\"\"\n        if self.redsea is None:\n\
       \            self.redsea = subprocess.Popen([self.command], stdin=subprocess.PIPE,\
       \ stdout=subprocess.PIPE)\n\n        # Receive JSON if any\n        while True:\n\
-      \            reading, _, _ = select.select([self.redsea.stdout] , [self.redsea.stdin],\
-      \ [])\n            if (reading == []):\n                break\n\n          \
-      \  rds = json.loads(self.redsea.stdout.readline())\n            if \"prog_type\"\
-      \ in rds:\n                new_pty = self.pty_debounce.got(rds[\"prog_type\"\
-      ])\n                if new_pty is not None:\n                    self.message_port_pub(pmt.intern('pty'),\
+      \            # Selecting both reading and writing but ignoring output\n    \
+      \        # because we already know it's ready for writing when we\n        \
+      \    # can't read no more. In short, we prioritize reading RDS\n           \
+      \ # data if it's available.\n            reading, _, _ = select.select([self.redsea.stdout]\
+      \ , [self.redsea.stdin], [])\n            if (reading == []):\n            \
+      \    break\n\n            rds = json.loads(self.redsea.stdout.readline())\n\
+      \            if \"prog_type\" in rds:\n                new_pty = self.pty_debounce.got(rds[\"\
+      prog_type\"])\n                if new_pty is not None:\n                   \
+      \ # If PTY really changes, report it\n                    self.message_port_pub(pmt.intern('pty'),\
       \ pmt.intern(new_pty))\n\n        # Send data to Redsea\n        self.redsea.stdin.write(input_items[0].tobytes())\n\
-      \n        # Just copy data intact\n        return len(input_items[0])\n"
+      \n        # Report consumed items\n        return len(input_items[0])\n"
     affinity: ''
     alias: ''
     command: redsea_path
@@ -278,7 +746,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [280, 336.0]
+    coordinate: [408, 768.0]
     rotation: 0
     state: enabled
 - name: redsea_path
@@ -295,7 +763,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [568, 16.0]
+    coordinate: [824, 160.0]
     rotation: 0
     state: true
 - name: resample_to_audio
@@ -313,7 +781,24 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [864, 248.0]
+    coordinate: [632, 592.0]
+    rotation: 0
+    state: true
+- name: rf_gain
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: RF gain
+    short_id: g
+    type: intx
+    value: '30'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [480, 16.0]
     rotation: 0
     state: true
 - name: stop_after
@@ -330,38 +815,75 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [824, 16.0]
+    coordinate: [400, 160.0]
     rotation: 0
     state: true
-- name: to_float
-  id: blocks_short_to_float
+- name: virtual_sink_0
+  id: virtual_sink
   parameters:
-    affinity: ''
     alias: ''
     comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    scale: 2**15
-    vlen: '1'
+    stream_id: mpx
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [304, 224.0]
+    coordinate: [776, 392.0]
+    rotation: 0
+    state: true
+- name: virtual_sink_1
+  id: virtual_sink
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: mute
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [792, 768.0]
+    rotation: 0
+    state: true
+- name: virtual_source_0
+  id: virtual_source
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: mpx
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [72, 568.0]
+    rotation: 0
+    state: true
+- name: virtual_source_1
+  id: virtual_source
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: mute
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [248, 648.0]
     rotation: 0
     state: true
 
 connections:
-- [blocks_file_source_0, '0', redsea, '0']
-- [blocks_file_source_0, '0', to_float, '0']
-- [fd_source, '0', redsea, '0']
-- [fd_source, '0', to_float, '0']
+- [analog_quadrature_demod_cf_0, '0', virtual_sink_0, '0']
+- [blocks_float_to_short_0, '0', redsea, '0']
 - [fm_deemph, '0', muter, '0']
+- [freq_xlating_fir_filter_xxx_0, '0', analog_quadrature_demod_cf_0, '0']
 - [muter, '0', resample_to_audio, '0']
-- [pty_mute, mute, muter, set_mute]
+- [osmosdr_source_0, '0', freq_xlating_fir_filter_xxx_0, '0']
+- [pty_mute, mute, virtual_sink_1, '0']
 - [redsea, pty, pty_mute, pty]
 - [resample_to_audio, '0', audio_sink, '0']
-- [to_float, '0', fm_deemph, '0']
+- [virtual_source_0, '0', blocks_float_to_short_0, '0']
+- [virtual_source_0, '0', fm_deemph, '0']
+- [virtual_source_1, '0', muter, set_mute]
 
 metadata:
   file_format: 1
