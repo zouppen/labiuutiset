@@ -93,7 +93,7 @@ blocks:
     label: Audio device
     short_id: a
     type: str
-    value: pulse
+    value: '"pulse"'
   states:
     bus_sink: false
     bus_source: false
@@ -178,7 +178,7 @@ blocks:
     label: Device string
     short_id: d
     type: str
-    value: ''
+    value: '""'
   states:
     bus_sink: false
     bus_source: false
@@ -641,7 +641,7 @@ blocks:
     label: PTY to play
     short_id: p
     type: str
-    value: News
+    value: '"News"'
   states:
     bus_sink: false
     bus_source: false
@@ -758,7 +758,7 @@ blocks:
     label: Path to Redsea
     short_id: R
     type: str
-    value: ./redsea
+    value: '"./redsea"'
   states:
     bus_sink: false
     bus_source: false
