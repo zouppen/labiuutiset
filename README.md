@@ -50,7 +50,7 @@ binary to after `-R` parameter and run:
 ./news_player.py -f 99.3 -R /PATH/TO/redsea/src/redsea
 ```
 
-See `./news_player.py` for all options such as gain and PTY.
+See `./news_player.py --help` for all options such as gain and PTY.
 
 ## License
 
