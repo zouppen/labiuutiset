@@ -132,7 +132,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [848, 608.0]
+    coordinate: [1000, 608.0]
     rotation: 0
     state: enabled
 - name: bb_gain
@@ -169,6 +169,24 @@ blocks:
     coordinate: [248, 752.0]
     rotation: 0
     state: enabled
+- name: blocks_multiply_const_vxx_0
+  id: blocks_multiply_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    const: volume
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [840, 616.0]
+    rotation: 0
+    state: true
 - name: device
   id: parameter
   parameters:
@@ -646,7 +664,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [280, 160.0]
+    coordinate: [432, 160.0]
     rotation: 0
     state: true
 - name: pty_mute
@@ -721,7 +739,7 @@ blocks:
       \ it too early\n        self.redsea = None\n        self.command = command\n\
       \        self.pty_debounce = debounce()\n\n    def work(self, input_items, output_items):\n\
       \        \"\"\"Throw data to Red Sea\"\"\"\n        if self.redsea is None:\n\
-      \            self.redsea = subprocess.Popen([self.command], stdin=subprocess.PIPE,\
+      \            self.redsea = subprocess.Popen([self.command], bufsize=0, stdin=subprocess.PIPE,\
       \ stdout=subprocess.PIPE)\n\n        # Receive JSON if any\n        while True:\n\
       \            # Selecting both reading and writing but ignoring output\n    \
       \        # because we already know it's ready for writing when we\n        \
@@ -815,7 +833,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [400, 160.0]
+    coordinate: [552, 160.0]
     rotation: 0
     state: true
 - name: virtual_sink_0
@@ -870,17 +888,35 @@ blocks:
     coordinate: [248, 648.0]
     rotation: 0
     state: enabled
+- name: volume
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Audio volume (0..1)
+    short_id: V
+    type: eng_float
+    value: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [280, 160.0]
+    rotation: 0
+    state: true
 
 connections:
 - [analog_quadrature_demod_cf_0, '0', virtual_sink_0, '0']
 - [blocks_float_to_short_0, '0', redsea, '0']
+- [blocks_multiply_const_vxx_0, '0', audio_sink, '0']
 - [fm_deemph, '0', muter, '0']
 - [freq_xlating_fir_filter_xxx_0, '0', analog_quadrature_demod_cf_0, '0']
 - [muter, '0', resample_to_audio, '0']
 - [osmosdr_source_0, '0', freq_xlating_fir_filter_xxx_0, '0']
 - [pty_mute, mute, virtual_sink_1, '0']
 - [redsea, pty, pty_mute, pty]
-- [resample_to_audio, '0', audio_sink, '0']
+- [resample_to_audio, '0', blocks_multiply_const_vxx_0, '0']
 - [virtual_source_0, '0', blocks_float_to_short_0, '0']
 - [virtual_source_0, '0', fm_deemph, '0']
 - [virtual_source_1, '0', muter, set_mute]
